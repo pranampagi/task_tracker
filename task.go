@@ -1,9 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
+
+var ErrTaskNotFound = errors.New("task not found")
 
 type Task struct {
 	ID          int       `json:"id"`
@@ -54,6 +57,36 @@ func FilterTasks(tasks []Task, status string) []Task {
 		}
 	}
 	return result
+}
+
+func findTaskIndex(tasks []Task, id int) int {
+	for i, t := range tasks {
+		if t.ID == id {
+			return i
+		}
+	}
+	return -1
+}
+
+func UpdateTask(tasks []Task, id int, description string) ([]Task, error) {
+	i := findTaskIndex(tasks, id)
+	if i == -1 {
+		return tasks, ErrTaskNotFound
+	}
+
+	tasks[i].Description = description
+	tasks[i].UpdatedAt = time.Now()
+	return tasks, nil
+}
+
+func DeleteTask(tasks []Task, id int) ([]Task, error) {
+	i := findTaskIndex(tasks, id)
+	if i == -1 {
+		return tasks, ErrTaskNotFound
+	}
+
+	tasks = append(tasks[:i], tasks[i+1:]...)
+	return tasks, nil
 }
 
 func statusLabel(status string) string {

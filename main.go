@@ -3,7 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
+
+func parseID(s string) (int, error) {
+	id, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, fmt.Errorf("invalid task ID: %q", s)
+	}
+	return id, nil
+}
 
 const usage = `Usage: task-cli <command> [arguments]
 
@@ -67,11 +76,67 @@ func handleAdd(args []string) {
 }
 
 func handleUpdate(args []string) {
-	fmt.Println("update: not yet implemented")
+	if len(args) < 2 {
+		fmt.Fprintln(os.Stderr, "Error: missing arguments.\nUsage: task-cli update <id> <description>")
+		os.Exit(1)
+	}
+
+	id, err := parseID(args[0])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	tasks, err := LoadTasks()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	tasks, err = UpdateTask(tasks, id, args[1])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SaveTasks(tasks); err != nil {
+		fmt.Fprintf(os.Stderr, "Error saving tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Task updated successfully")
 }
 
 func handleDelete(args []string) {
-	fmt.Println("delete: not yet implemented")
+	if len(args) < 1 {
+		fmt.Fprintln(os.Stderr, "Error: missing task ID.\nUsage: task-cli delete <id>")
+		os.Exit(1)
+	}
+
+	id, err := parseID(args[0])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	tasks, err := LoadTasks()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	tasks, err = DeleteTask(tasks, id)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SaveTasks(tasks); err != nil {
+		fmt.Fprintf(os.Stderr, "Error saving tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Task deleted successfully")
 }
 
 func handleMark(args []string, status string) {
