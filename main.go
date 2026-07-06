@@ -44,7 +44,26 @@ func main() {
 }
 
 func handleAdd(args []string) {
-	fmt.Println("add: not yet implemented")
+	if len(args) < 1 {
+		fmt.Fprintln(os.Stderr, "Error: missing description.\nUsage: task-cli add <description>")
+		os.Exit(1)
+	}
+
+	tasks, err := LoadTasks()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	desc := args[0]
+	tasks, task := AddTask(tasks, desc)
+
+	if err := SaveTasks(tasks); err != nil {
+		fmt.Fprintf(os.Stderr, "Error saving tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Task added successfully (ID: %d)\n", task.ID)
 }
 
 func handleUpdate(args []string) {
@@ -60,5 +79,24 @@ func handleMark(args []string, status string) {
 }
 
 func handleList(args []string) {
-	fmt.Println("list: not yet implemented")
+	tasks, err := LoadTasks()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	status := ""
+	if len(args) > 0 {
+		status = args[0]
+	}
+
+	filtered := FilterTasks(tasks, status)
+	if len(filtered) == 0 {
+		fmt.Println("No tasks found.")
+		return
+	}
+
+	for _, t := range filtered {
+		PrintTask(t)
+	}
 }
