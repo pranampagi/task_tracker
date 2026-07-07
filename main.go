@@ -65,6 +65,11 @@ func handleAdd(args []string) {
 	}
 
 	desc := args[0]
+	if desc == "" {
+		fmt.Fprintln(os.Stderr, "Error: description cannot be empty.")
+		os.Exit(1)
+	}
+
 	tasks, task := AddTask(tasks, desc)
 
 	if err := SaveTasks(tasks); err != nil {
@@ -181,6 +186,13 @@ func handleList(args []string) {
 	status := ""
 	if len(args) > 0 {
 		status = args[0]
+		switch status {
+		case StatusTodo, StatusInProgress, StatusDone:
+		case "":
+		default:
+			fmt.Fprintf(os.Stderr, "Error: invalid status %q. Valid options: done, todo, in-progress\n", status)
+			os.Exit(1)
+		}
 	}
 
 	filtered := FilterTasks(tasks, status)

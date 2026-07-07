@@ -16,6 +16,10 @@ func LoadTasks() ([]Task, error) {
 		return nil, err
 	}
 
+	if len(data) == 0 {
+		return []Task{}, nil
+	}
+
 	var tasks []Task
 	if err := json.Unmarshal(data, &tasks); err != nil {
 		return nil, err
