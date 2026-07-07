@@ -140,7 +140,35 @@ func handleDelete(args []string) {
 }
 
 func handleMark(args []string, status string) {
-	fmt.Println("mark: not yet implemented")
+	if len(args) < 1 {
+		fmt.Fprintf(os.Stderr, "Error: missing task ID.\nUsage: task-cli mark-%s <id>\n", status)
+		os.Exit(1)
+	}
+
+	id, err := parseID(args[0])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	tasks, err := LoadTasks()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	tasks, err = MarkTask(tasks, id, status)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SaveTasks(tasks); err != nil {
+		fmt.Fprintf(os.Stderr, "Error saving tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Task marked as %s successfully\n", status)
 }
 
 func handleList(args []string) {

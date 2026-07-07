@@ -79,6 +79,17 @@ func UpdateTask(tasks []Task, id int, description string) ([]Task, error) {
 	return tasks, nil
 }
 
+func MarkTask(tasks []Task, id int, status string) ([]Task, error) {
+	i := findTaskIndex(tasks, id)
+	if i == -1 {
+		return tasks, ErrTaskNotFound
+	}
+
+	tasks[i].Status = status
+	tasks[i].UpdatedAt = time.Now()
+	return tasks, nil
+}
+
 func DeleteTask(tasks []Task, id int) ([]Task, error) {
 	i := findTaskIndex(tasks, id)
 	if i == -1 {
